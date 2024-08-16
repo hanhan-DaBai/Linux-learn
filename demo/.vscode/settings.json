@@ -2,6 +2,9 @@
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
         "functional": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "random": "c",
+        "pthread.h": "c",
+        "string.h": "c"
     }
 }

@@ -5,13 +5,38 @@
 #include <sys/types.h>    
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <pthread.h>
+#include <netinet/in.h>
+#include <netinet/ip.h> 
+
+
+void *func(void *th)
+{
+    char buf[100];
+    int sock=*(int*)th;
+    int cnt;
+    while(1)
+    {
+        memset(buf,0,sizeof(buf));
+        cnt = read(sock,buf,100);
+        if(cnt > 0)
+        {
+            if(strstr(buf,"quit") != NULL) break;
+            printf("recv data:%s\n",buf);
+        }
+        else if(cnt == 0) break;  //挥手信号，如果对方断开了，这里还执行write函数，会使进程异常退出。
+        write(sock,"hello",5);
+    }
+    close(sock);
+}
 int main()
 {
     char buf[100];
-    int socket_fd,new_socket;
+    int socket_fd;
     struct sockaddr_in host_addr;
     struct sockaddr address;
     int addlen = sizeof(address);
+    pthread_t cliend_pth;
     
     if((socket_fd=socket(AF_INET,SOCK_STREAM,0))<0)
     {
@@ -35,16 +60,12 @@ int main()
     } 
     while (1)
     {
-        new_socket=accept(socket_fd,&address,&addlen);
-        if(read(new_socket, buf, 100)<0)
-        {
-           perror("read");
-            _exit(EXIT_FAILURE); 
-        }
-        printf("Message from client: %s\n", buf);
+        int new_socket=accept(socket_fd,&address,&addlen);
+        printf("accept a new conoection\n");
+        pthread_create(&cliend_pth,NULL,func,&new_socket);
+        
     }
     
-    close(new_socket);
-    close(socket_fd);
+    
     return 0;
 }
