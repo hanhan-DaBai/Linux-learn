@@ -10,9 +10,10 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <signal.h>
-
+// 宏定义端口号
 #define PROT 8083
 int server;
+
 void handle_signal(int sig)
 {
     if(sig==SIGINT)
@@ -28,16 +29,16 @@ int main()
     struct sockaddr_in sock_addr;
     fd_set readfds,fds;
     int max_fd =0;
+    //创建套接字
     server=socket(AF_INET,SOCK_STREAM,0);
-
-    signal(SIGINT,handle_signal);
-
     if(server<0)
     {
         perror("socket");
         _exit(EXIT_FAILURE);
     }
-    //配置ip与端口号
+    //接收CTRL+C
+    signal(SIGINT,handle_signal);
+    //配置并绑定ip与端口号
     sock_addr.sin_family=AF_INET;
     sock_addr.sin_port=htons(PROT);
     sock_addr.sin_addr.s_addr=INADDR_ANY;
@@ -46,12 +47,14 @@ int main()
         perror("bind");
         _exit(EXIT_FAILURE);
     }
+    //监听套接字
     if(listen(server,100)<0)
     {
         perror("listen");
         _exit(EXIT_FAILURE);
     }
 
+    //初始化fds，readfds，max_FD。把server放入fds中
     max_fd =server;
     FD_ZERO(&fds);
     FD_ZERO(&readfds);
@@ -59,7 +62,7 @@ int main()
 
     while (1)
     {
-
+        //遍历文件描述符，把fd放入readfds中
         for(int fd=0;fd<1024;fd++)
         {
             if(FD_ISSET(fd,&fds))
@@ -68,11 +71,19 @@ int main()
                 if(fd>max_fd)max_fd=fd;
             }
         }
-        select(max_fd+1,&readfds,NULL,NULL,0);
+        //建立模型连接可读文件
+        int n=select(max_fd+1,&readfds,NULL,NULL,0);
+        if(n<0)
+        {
+            perror("select");
+            _exit(EXIT_FAILURE);
+        }
+        //遍历发现改变的
         for(int fd=0;fd<=max_fd;fd++)
         {
             if(FD_ISSET(fd,&readfds))
             {
+                //接收新的连接
                 if(fd == server)
                 {
                     int newsock = accept(server,NULL,NULL);
