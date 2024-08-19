@@ -6,6 +6,7 @@
         "random": "c",
         "pthread.h": "c",
         "string.h": "c",
-        "in.h": "c"
+        "in.h": "c",
+        "*.tcc": "c"
     }
 }

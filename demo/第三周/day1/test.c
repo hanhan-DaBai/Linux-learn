@@ -83,7 +83,6 @@ int main()
         {
             if(FD_ISSET(fd,&readfds))
             {
-                //接收新的连接
                 if(fd == server)
                 {
                     int newsock = accept(server,NULL,NULL);
