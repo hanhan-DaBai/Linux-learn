@@ -8,8 +8,10 @@
 #include <netinet/ip.h> 
 #include <unistd.h>
 #include <signal.h>
+//宏定义服务端端口
 #define PORT 8080
 int server;
+//ctrl+C关闭终端释放服务器
 void handle_signal(int sig)
 {
     if(sig==SIGINT)
@@ -25,9 +27,9 @@ int main()
 
     struct sockaddr_in host_addr,colient_addr;
     socklen_t len =sizeof(colient_addr);
-    
+    //接收CTRL+C信号
     signal(SIGINT,handle_signal);
-
+    //生成套接字
     server=socket(AF_INET,SOCK_DGRAM ,0);
     if(server<0)
     {
@@ -35,6 +37,7 @@ int main()
         _exit(EXIT_FAILURE);
     }
 
+    //绑定服务端地址与端口
     host_addr.sin_family=AF_INET;
     host_addr.sin_port=htons(PORT);
     host_addr.sin_addr.s_addr=INADDR_ANY;
@@ -46,13 +49,26 @@ int main()
     
     while (1)
     {
-       
+        //清空输入数组，将接收的写入其中然后打印
         char rxbuf[100];
         memset(rxbuf,0,sizeof(rxbuf));
-        recvfrom(server,rxbuf,sizeof(rxbuf),0,(struct sockaddr*)&colient_addr,&len);
+        int n = recvfrom(server,rxbuf,sizeof(rxbuf),0,(struct sockaddr*)&colient_addr,&len);
+        if(n<0)
+        {
+            perror("recvfrom");
+            _exit(EXIT_FAILURE);
+        }
         printf("%s\n",rxbuf);
-        sendto(server,"hello\n",7,0,(struct sockaddr*)&colient_addr,len);
-        
+        //接收到后向客户端发送ok
+        if(n>0)
+        {
+            int m= sendto(server,"ok\n",7,0,(struct sockaddr*)&colient_addr,len);
+            if(m<0)
+            {
+                perror("sendto");
+                _exit(EXIT_FAILURE);
+            }
+        } 
     }
    close(server);
 
