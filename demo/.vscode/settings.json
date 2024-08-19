@@ -5,6 +5,7 @@
         "types.h": "c",
         "random": "c",
         "pthread.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "in.h": "c"
     }
 }

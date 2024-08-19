@@ -26,12 +26,15 @@ int main()
     colient_addr.sin_port=htons(PORT);
     colient_addr.sin_addr.s_addr=INADDR_ANY;
     bind(server,(struct sockaddr*)&colient_addr,sizeof(colient_addr));
-
     
+    host_addr.sin_family=AF_INET;
+    host_addr.sin_port=htons(8080);
+    host_addr.sin_addr.s_addr=inet_addr("192.168.137.138");
 
     while (1)
-    {
+    { 
         char rxbuf[100],txbuf[100];
+
 
         
         memset(txbuf,0,sizeof(txbuf));
@@ -40,7 +43,8 @@ int main()
         
 
         memset(rxbuf,0,sizeof(rxbuf));
-        recvfrom(server,rxbuf,sizeof(rxbuf),0,(struct sockaddr*)&host_addr,&len);
+        recvfrom(server,rxbuf,128,0,(struct sockaddr*)&host_addr,&len);
+        printf("%s",rxbuf);
         
 
     }
