@@ -1,4 +1,5 @@
 //通过socket套接字实现多进程tcp通信
+//
 #include<stdio.h>
 #include <stdlib.h>
 #include <string.h>
