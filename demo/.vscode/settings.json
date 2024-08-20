@@ -7,6 +7,10 @@
         "pthread.h": "c",
         "string.h": "c",
         "in.h": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "stdlib.h": "c",
+        "time.h": "c",
+        "socket.h": "c",
+        "inet.h": "c"
     }
 }

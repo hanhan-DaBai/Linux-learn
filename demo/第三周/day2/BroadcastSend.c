@@ -5,38 +5,48 @@
 #include <sys/types.h>       
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <netinet/in.h>
 #include <netinet/ip.h> 
+#include <pthread.h>
 #include <unistd.h>
 #include <signal.h>
 #include <arpa/inet.h>
 
 //宏定义服务端IP与客户端端口（客户端端口不能与服务端相同）
 #define PORT 8081
-#define IP "192.168.137.138"
+#define IP "192.168.3.255"
 
+int server;
 int main()
 {
-    int server;
-    struct sockaddr_in host_addr,colient_addr;
-    socklen_t len=sizeof(host_addr);
-
-    //创建套接字
-    if((server=socket(AF_INET,SOCK_DGRAM,0))<0)
+    //1.创建套接字
+    server=socket(AF_INET,SOCK_DGRAM,0);
+    if(server<0)
     {
         perror("socket");
         _exit(EXIT_FAILURE);
     }
+
+    //2.设置为广播
+    int optval = 1;
+    if(setsockopt(server,SOL_SOCKET,SO_BROADCAST,&optval,sizeof(optval))<0)
+    {
+        perror("setsockopt");
+        _exit(EXIT_FAILURE);
+    }
+    
     //绑定客户端地址（也可以不绑定）
+    struct sockaddr_in colient_addr,host_addr;
     colient_addr.sin_family=AF_INET;
     colient_addr.sin_port=htons(PORT);
-    colient_addr.sin_addr.s_addr=INADDR_ANY;
+    colient_addr.sin_addr.s_addr=inet_addr("192.168.137.138");
     bind(server,(struct sockaddr*)&colient_addr,sizeof(colient_addr));
 
     //设置服务端地址与端口（需要直到和谁通信）
     host_addr.sin_family=AF_INET;
     host_addr.sin_port=htons(8080);
     host_addr.sin_addr.s_addr=inet_addr(IP);
-
+    socklen_t len =sizeof(host_addr);
     while (1)
     { 
         char rxbuf[100],txbuf[100];
@@ -60,7 +70,6 @@ int main()
         }
         printf("%s",rxbuf);
         
-
     }
-    
+
 }

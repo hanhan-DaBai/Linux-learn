@@ -71,13 +71,14 @@ int main()
                 if(fd>max_fd)max_fd=fd;
             }
         }
-        //建立模型连接可读文件
+        //建立模型连接可读文件，
         int n=select(max_fd+1,&readfds,NULL,NULL,0);
         if(n<0)
         {
             perror("select");
             _exit(EXIT_FAILURE);
         }
+        
         //遍历发现改变的
         for(int fd=0;fd<=max_fd;fd++)
         {
@@ -99,8 +100,11 @@ int main()
                     else{
                         printf("recv a close\n"); 
                         close(fd);
+
+                        //把已经关闭的从fds和readfds中移除
                         FD_CLR(fd,&fds);
-                        max_fd=0;
+                        FD_CLR(fd,&readfds);
+                        
                     }
                 }
             }
